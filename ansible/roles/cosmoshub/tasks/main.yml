@@ -7,3 +7,4 @@
 - include_tasks: configure_firewall.yml
 - include_tasks: sync_from_snapshot.yml
 - include_tasks: check_service_status.yml
+- include_tasks: setup_prometheus_exporter.yml

@@ -7,3 +7,23 @@
     path: /home/cosmosuser/.gaia/config/config.toml
     regexp: '^external_address = ".*"'
     line: 'external_address = "tcp://{{ public_ip.stdout }}:26656"'
+
+- name: Update laddr in config.toml
+  lineinfile:
+    path: /home/cosmosuser/.gaia/config/config.toml
+    regexp: '^laddr = ".*"'
+    line: 'laddr = "tcp://0.0.0.0:26657"'
+  become: yes
+  become_user: cosmosuser
+
+# - name: Add persistent_peers to config.toml
+#   lineinfile:
+#     path: /home/cosmosuser/.gaia/config/config.toml
+#     regexp: '^persistent_peers = ".*"'
+#     line: 'persistent_peers = "id@ip:port,id@ip:port,id@ip:port"'
+#   become_user: cosmosuser
+
+- name: Restart gaiad service
+  systemd:
+    name: gaiad
+    state: restarted

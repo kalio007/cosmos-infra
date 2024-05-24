@@ -1,0 +1,14 @@
+[Unit]
+Description=Prometheus Exporter for Cosmos Node
+After=network.target
+
+[Service]
+User=cosmosuser
+WorkingDirectory=/home/cosmosuser
+ExecStart=/home/cosmosuser/prometheus_venv/bin/python /home/cosmosuser/prometheus_exporter.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

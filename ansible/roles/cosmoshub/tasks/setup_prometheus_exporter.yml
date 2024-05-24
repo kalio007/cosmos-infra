@@ -1,0 +1,46 @@
+- name: Ensure pip and venv are installed
+  apt:
+    name:
+      - python3-pip
+      - python3-venv
+    state: present
+
+- name: Create a virtual environment for the Prometheus exporter
+  command: python3 -m venv /home/cosmosuser/prometheus_venv
+  become: yes
+  become_user: cosmosuser
+
+- name: Ensure required Python packages are installed in the virtual environment
+  command: /home/cosmosuser/prometheus_venv/bin/pip install flask requests
+  become: yes
+  become_user: cosmosuser
+
+- name: Upload Prometheus exporter script
+  copy:
+    src: prometheus_exporter.py
+    dest: /home/cosmosuser/prometheus_exporter.py
+    mode: '0755'
+    owner: cosmosuser
+    group: cosmosuser
+
+- name: Upload Prometheus exporter systemd service
+  template:
+    src: prometheus_exporter.service.j2
+    dest: /etc/systemd/system/prometheus_exporter.service
+    mode: '0644'
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start Prometheus exporter service
+  systemd:
+    name: prometheus_exporter
+    enabled: yes
+    state: started
+
+- name: Ensure port 8000 is open in the firewall
+  ufw:
+    rule: allow
+    port: 8000
+    proto: tcp

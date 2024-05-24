@@ -1,10 +1,3 @@
-- name: Ensure cosmosuser exists
-  user:
-    name: cosmosuser
-    state: present
-    shell: /bin/bash
-    create_home: yes
-
 - name: Ensure .ssh directory exists
   file:
     path: /home/cosmosuser/.ssh
@@ -12,14 +5,6 @@
     owner: cosmosuser
     group: cosmosuser
     mode: '0700'
-
-- name: Copy SSH key for cosmosuser
-  copy:
-    src: ~/.ssh/samuel.pub
-    dest: /home/cosmosuser/.ssh/authorized_keys
-    owner: cosmosuser
-    group: cosmosuser
-    mode: '0600'
 
 - name: Ensure Gaia directory exists
   file:
@@ -66,6 +51,8 @@
       - make
       - gcc
       - snapd
+      - python3-pip
+      - python3-venv
     state: present
 
 - name: Remove old Go installation
