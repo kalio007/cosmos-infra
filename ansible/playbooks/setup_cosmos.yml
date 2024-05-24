@@ -1,0 +1,5 @@
+- hosts: cosmos_nodes
+  become: yes
+  remote_user: cosmosuser
+  roles:
+    - cosmoshub

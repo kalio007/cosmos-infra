@@ -1,0 +1,9 @@
+- name: Get public IP of the server
+  shell: curl -s http://checkip.amazonaws.com
+  register: public_ip
+
+- name: Update external_address in config.toml
+  lineinfile:
+    path: /home/cosmosuser/.gaia/config/config.toml
+    regexp: '^external_address = ".*"'
+    line: 'external_address = "tcp://{{ public_ip.stdout }}:26656"'

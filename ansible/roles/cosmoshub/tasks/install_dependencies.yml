@@ -1,0 +1,82 @@
+- name: Ensure cosmosuser exists
+  user:
+    name: cosmosuser
+    state: present
+    shell: /bin/bash
+    create_home: yes
+
+- name: Ensure .ssh directory exists
+  file:
+    path: /home/cosmosuser/.ssh
+    state: directory
+    owner: cosmosuser
+    group: cosmosuser
+    mode: '0700'
+
+- name: Copy SSH key for cosmosuser
+  copy:
+    src: ~/.ssh/samuel.pub
+    dest: /home/cosmosuser/.ssh/authorized_keys
+    owner: cosmosuser
+    group: cosmosuser
+    mode: '0600'
+
+- name: Ensure Gaia directory exists
+  file:
+    path: /home/cosmosuser/.gaia
+    state: directory
+    owner: cosmosuser
+    group: cosmosuser
+    mode: '0755'
+
+- name: Set ownership of the Gaia directory
+  command: chown -R cosmosuser:cosmosuser /home/cosmosuser/.gaia
+
+- name: Grant cosmosuser sudo privileges
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^cosmosuser'
+    line: 'cosmosuser ALL=(ALL) NOPASSWD:ALL'
+  become: yes
+
+- name: Validate sudoers file
+  command: /usr/sbin/visudo -cf /etc/sudoers
+  become: yes
+  register: result
+  ignore_errors: yes
+
+- name: Fail if sudoers file is invalid
+  fail:
+    msg: 'The sudoers file is invalid'
+  when: result.rc != 0
+
+- name: Update and upgrade APT packages
+  apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Install required packages
+  apt:
+    name:
+      - curl
+      - jq
+      - git
+      - build-essential
+      - make
+      - gcc
+      - snapd
+    state: present
+
+- name: Remove old Go installation
+  command: sudo rm -rf /usr/local/go
+
+- name: Download and install Go
+  shell: curl -Ls https://go.dev/dl/go1.21.10.linux-amd64.tar.gz | sudo tar -xzf - -C /usr/local
+
+- name: Add Go to system PATH
+  shell: |
+    echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee /etc/profile.d/golang.sh
+    echo 'export PATH=$PATH:$HOME/go/bin' | tee -a $HOME/.profile
+    . /etc/profile.d/golang.sh
+    . $HOME/.profile

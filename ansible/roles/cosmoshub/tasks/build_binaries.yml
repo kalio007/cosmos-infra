@@ -1,0 +1,59 @@
+- name: Clone Gaia repository
+  git:
+    repo: https://github.com/cosmos/gaia
+    dest: /home/cosmosuser/gaia
+    version: v16.0.0
+  become: yes
+  become_user: cosmosuser
+
+- name: Build Gaia binaries
+  shell: make install
+  args:
+    chdir: /home/cosmosuser/gaia
+  environment:
+    GOROOT: /usr/local/go
+    GOPATH: /home/cosmosuser/go
+    PATH: "/usr/local/go/bin:/home/cosmosuser/go/bin:{{ ansible_env.PATH }}"
+  become: yes
+  become_user: cosmosuser
+
+- name: Copy gaiad binary to /usr/local/bin
+  command: cp /home/cosmosuser/go/bin/gaiad /usr/local/bin/
+  become: yes
+
+- name: Create Cosmovisor directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: cosmosuser
+    group: cosmosuser
+    mode: '0755'
+  with_items:
+    - /home/cosmosuser/.gaia/cosmovisor/genesis/bin
+    - /home/cosmosuser/.gaia/cosmovisor/upgrades/v16.0.0/bin
+  become: yes
+
+
+- name: Copy Gaia binary to Cosmovisor genesis bin
+  copy:
+    src: /home/cosmosuser/go/bin/gaiad
+    dest: /home/cosmosuser/.gaia/cosmovisor/genesis/bin/gaiad
+    remote_src: yes
+  become: yes
+
+- name: Copy Gaia binary to Cosmovisor upgrades bin
+  copy:
+    src: /home/cosmosuser/go/bin/gaiad
+    dest: /home/cosmosuser/.gaia/cosmovisor/upgrades/v16.0.0/bin/gaiad
+    remote_src: yes
+  become: yes
+
+- name: Ensure Gaia binary is executable by all users
+  file:
+    path: "{{ item }}"
+    mode: '0755'
+  with_items:
+    - /usr/local/bin/gaiad
+    - /home/cosmosuser/.gaia/cosmovisor/genesis/bin/gaiad
+    - /home/cosmosuser/.gaia/cosmovisor/upgrades/v16.0.0/bin/gaiad
+  become: yes

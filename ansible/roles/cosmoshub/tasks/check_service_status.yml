@@ -1,0 +1,8 @@
+- name: Check status of gaiad service
+  command: systemctl status gaiad
+  register: service_status
+  ignore_errors: yes
+
+- name: Display status of gaiad service
+  debug:
+    msg: "{{ service_status.stdout }}"

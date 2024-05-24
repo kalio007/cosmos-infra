@@ -1,0 +1,9 @@
+- include_tasks: install_dependencies.yml
+- include_tasks: build_binaries.yml
+- include_tasks: install_cosmovisor.yml
+- include_tasks: configure_service.yml
+- include_tasks: initialize_node.yml
+- include_tasks: update_config.yml
+- include_tasks: configure_firewall.yml
+- include_tasks: sync_from_snapshot.yml
+- include_tasks: check_service_status.yml

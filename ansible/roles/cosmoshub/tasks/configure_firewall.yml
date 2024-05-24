@@ -1,0 +1,5 @@
+- name: Ensure port 26656 is open in the firewall
+  ufw:
+    rule: allow
+    port: 26656
+    proto: tcp

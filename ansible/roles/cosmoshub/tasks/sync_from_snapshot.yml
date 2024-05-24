@@ -1,0 +1,76 @@
+- name: Stop gaiad service
+  systemd:
+    name: gaiad
+    state: stopped
+
+- name: Backup priv_validator_state.json
+  shell: cp /home/cosmosuser/.gaia/data/priv_validator_state.json /home/cosmosuser/.gaia/priv_validator_state.json.backup
+
+- name: Remove existing data directory
+  file:
+    path: /home/cosmosuser/.gaia/data
+    state: absent
+  become: yes
+
+- name: Install lz4
+  apt:
+    name: lz4
+    state: present
+    update_cache: yes
+
+- name: Install aria2
+  apt:
+    name: aria2
+    state: present
+    update_cache: yes
+
+- name: Download and extract snapshot
+  shell: aria2c -x 16 -s 16 -k 1M -o cosmoshub_20555398.tar.lz4 https://snapshots.lavenderfive.com/snapshots/cosmoshub/cosmoshub_20555398.tar.lz4 && tar -I lz4 -xf cosmoshub_20555398.tar.lz4 -C /home/cosmosuser/.gaia
+  args:
+    chdir: /home/cosmosuser
+  become: yes
+
+- name: Check if priv_validator_state.json.backup exists
+  stat:
+    path: /home/cosmosuser/.gaia/priv_validator_state.json.backup
+  register: backup_file
+
+- name: Create priv_validator_state.json backup if it does not exist
+  shell: cp /home/cosmosuser/.gaia/data/priv_validator_state.json /home/cosmosuser/.gaia/priv_validator_state.json.backup
+  when: not backup_file.stat.exists
+  become: yes
+
+- name: Restore priv_validator_state.json
+  shell: mv /home/cosmosuser/.gaia/priv_validator_state.json.backup /home/cosmosuser/.gaia/data/priv_validator_state.json
+  become: yes
+
+- name: Stop gaiad service
+  systemd:
+    name: gaiad
+    state: stopped
+  become: yes
+
+- name: Ensure correct ownership and permissions for .gaia directory
+  file:
+    path: /home/cosmosuser/.gaia
+    state: directory
+    owner: cosmosuser
+    group: cosmosuser
+    mode: '0755'
+    recurse: yes
+  become: yes
+
+- name: Ensure correct ownership and permissions for data directory
+  file:
+    path: /home/cosmosuser/.gaia/data
+    state: directory
+    owner: cosmosuser
+    group: cosmosuser
+    mode: '0755'
+    recurse: yes
+  become: yes
+
+- name: Start gaiad service
+  systemd:
+    name: gaiad
+    state: started
