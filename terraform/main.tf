@@ -50,12 +50,9 @@ resource "digitalocean_droplet" "cosmos-node" {
 
   provisioner "local-exec" {
     command = <<EOT
-    if [ -e "../ansible/inventory" ] && [ ! -d "../ansible/inventory" ]; then
-      rm -f ../ansible/inventory
-    fi
     mkdir -p ../ansible/inventory
     echo '[cosmos_nodes]' > ../ansible/inventory/hosts.ini
-    echo '${self.ipv4_address}' >> ../ansible/inventory/hosts.ini
+    echo '${self.ipv4_address} ansible_user=cosmosuser' >> ../ansible/inventory/hosts.ini
     EOT
   }
 }

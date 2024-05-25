@@ -1,3 +1,10 @@
+
+
+steps
+- export token
+- add fingerprint 
+
+
 Role Name
 =========
 
