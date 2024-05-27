@@ -1,6 +1,8 @@
 ## CosmosHub Infrastructure
 
 ## Overview
+![Cosmos Infrastructure](https://github.com/samuelarogbonlo/zKevm-Nodes-poc/assets/47984109/51976943-4c36-4f30-84d2-124f1ca9ed0b)
+
 This project involves bootstraping and exposing a new Cosmos node using Ansible and Terraform. It allows for building the reauired binary from source, node initialization and of course the bianry can be updated if required.
 
 Also, the setup has a feature to retrieve the latest block height synced by the node and reportted using a prometheus endpoint. It also achieves the following majorly:
