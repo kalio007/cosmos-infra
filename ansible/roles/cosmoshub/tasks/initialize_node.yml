@@ -1,3 +1,11 @@
+- name: Check if node configuration is already set
+  command: gaiad config node
+  register: node_config
+  become: yes
+  become_user: cosmosuser
+  changed_when: false
+  failed_when: false
+
 - name: Set node configuration
   shell: |
     gaiad config chain-id cosmoshub-4
@@ -8,6 +16,13 @@
     PATH: "/usr/local/go/bin:/home/cosmosuser/go/bin:{{ ansible_env.PATH }}"
   become: yes
   become_user: cosmosuser
+  when: node_config.stdout is not defined or "tcp://localhost:14957" not in node_config.stdout
+
+- name: Check if node is already initialized
+  stat:
+    path: /home/cosmosuser/.gaia/config/genesis.json
+  register: genesis_file
+  become: yes
 
 - name: Initialize Cosmos Hub node
   shell: gaiad init cosmos --chain-id cosmoshub-4
@@ -17,6 +32,7 @@
     PATH: "/usr/local/go/bin:/home/cosmosuser/go/bin:{{ ansible_env.PATH }}"
   become: yes
   become_user: cosmosuser
+  when: not genesis_file.stat.exists
 
 - name: Create config directory
   file:
@@ -27,19 +43,41 @@
     mode: '0755'
   become: yes
 
-- name: Download genesis.json
-  shell: curl -Ls https://github.com/cosmos/mainnet/raw/master/genesis/genesis.cosmoshub-4.json.gz | gunzip -c > /home/cosmosuser/.gaia/config/genesis.json
+# - name: Check if genesis.json exists
+#   stat:
+#     path: /home/cosmosuser/.gaia/config/genesis.json
+#   register: genesis_file_json
+#   become: yes
 
-- name: Download addrbook.json
+- name: Download genesis.json if it does not exist
+  shell: curl -Ls https://github.com/cosmos/mainnet/raw/master/genesis/genesis.cosmoshub-4.json.gz | gunzip -c > /home/cosmosuser/.gaia/config/genesis.json
+  become: yes
+
+- name: Check if addrbook.json exists
+  stat:
+    path: /home/cosmosuser/.gaia/config/addrbook.json
+  register: addrbook_file
+  become: yes
+
+- name: Download addrbook.json if it does not exist
   shell: curl -Ls https://snapshots.lavenderfive.com/addrbooks/cosmoshub/addrbook.json > /home/cosmosuser/.gaia/config/addrbook.json
+  when: not addrbook_file.stat.exists
+  become: yes
 
 - name: Add seeds to config.toml
   shell: |
     seeds="ba3bacc714817218562f743178228f23678b2873@public-seed-node.cosmoshub.certus.one:26656,ade4d8bc8cbe014af6ebdf3cb7b1e9ad36f412c0@seeds.polkachu.com:14956,20e1000e88125698264454a884812746c2eb4807@seeds.lavenderfive.com:14956,57a5297537b9b6ef8b105c08a8ad3f6ac452c423@seeds.goldenratiostaking.net:1618,c28827cb96c14c905b127b92065a3fb4cd77d7f6@seeds.whispernode.com:14956,8542cd7e6bf9d260fef543bc49e59be5a3fa9074@seed.publicnode.com:26656,400f3d9e30b69e78a7fb891f60d76fa3c73f0ecc@cosmoshub.rpc.kjnodes.com:11359,fe21dd474640247888fc7c4dce82da8da08a8bfd@seed-cosmos-hub-01.stakeflow.io:26656,11c6114a18f7b380e536b0bd17c031f4746e4ded@seed-node.mms.team:43656,87ccc1dcc0b846fc1623ab9a5ab55682e8e2ad2e@seed-cosmoshub.freshstaking.com:26656"
     sed -i -e "s|^seeds *=.*|seeds = \"$seeds\"|" /home/cosmosuser/.gaia/config/config.toml
 
-- name: Set minimum gas price
+- name: Check current minimum gas price in app.toml
+  shell: grep -E "^minimum-gas-prices *=.*" /home/cosmosuser/.gaia/config/app.toml
+  register: gas_price_config
+  changed_when: false
+
+- name: Set minimum gas price if not set
   shell: sed -i -e "s|^minimum-gas-prices *=.*|minimum-gas-prices = \"0.005uatom\"|" /home/cosmosuser/.gaia/config/app.toml
+  when: gas_price_config.stdout is not defined or "0.005uatom" not in gas_price_config.stdout
+  become: yes
 
 - name: Set pruning
   shell: |

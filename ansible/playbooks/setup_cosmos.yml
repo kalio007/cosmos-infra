@@ -3,3 +3,5 @@
   remote_user: cosmosuser
   roles:
     - cosmoshub
+  handlers:
+    - include_tasks: roles/cosmoshub/handlers/main.yml

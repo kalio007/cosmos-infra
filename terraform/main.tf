@@ -15,7 +15,7 @@ resource "digitalocean_droplet" "cosmos-node" {
   image  = "ubuntu-20-04-x64"
   name   = "cosmos-node"
   region = "nyc1"
-  size   = "s-1vcpu-2gb"
+  size   = "s-2vcpu-4gb"
   ssh_keys = var.ssh_keys
 
   provisioner "remote-exec" {
@@ -52,7 +52,7 @@ resource "digitalocean_droplet" "cosmos-node" {
     command = <<EOT
     mkdir -p ../ansible/inventory
     echo '[cosmos_nodes]' > ../ansible/inventory/hosts.ini
-    echo '${self.ipv4_address} ansible_user=cosmosuser' >> ../ansible/inventory/hosts.ini
+    echo '${self.ipv4_address}' >> ../ansible/inventory/hosts.ini
     EOT
   }
 }

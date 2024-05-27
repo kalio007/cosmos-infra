@@ -1,45 +1,34 @@
+## CosmosHub Infrastructure
 
+## Overview
+This project involves bootstraping and exposing a new Cosmos node using Ansible and Terraform. It allows for building the reauired binary from source, node initialization and of course the bianry can be updated if required.
 
-steps
-- export token
-- add fingerprint 
+Also, the setup has a feature to retrieve the latest block height synced by the node and reportted using a prometheus endpoint. It also achieves the following majorly:
+**- Idempotency:** This means that after the initial setup, no re-running will interfere with node operations
+**- Configurability:** Many variables are configurable like the token, ssh-key fingerprint, persistent peers, seeds and much more.
+**- Resiliency:** The cosmos node and the prometheus exporter runs as a systemd service and will restart after crashing.
 
+### Prerequisites
+- Ansible
+- Make
+- Terraform
 
-Role Name
-=========
+### Installation
+- Clone this repository with `git clone https://github.com/samuelarogbonlo/cosmos-infra.git`
+- Create a file called `terraform.tfvars` in the main terraform directory and use this format to populate the file
+```
+digitalocean_token = ""
+ssh_keys = ["ssh-key-fingerprint"]
+```
+- Check [here](https://services.lavenderfive.com/mainnet/cosmoshub/snapshot) for the latest snapshot link to be used in the `<snapshot ID>` variable in `sync_from_snapshot.yml` task
+- Naviagate to the `cosmos-infra` directory and run `make`. This will provision the Infrastructure, dynamically send the IP address to ansible and then run the cosmos installation.
+- Once the setup completes it's building and the node is syncing, you can check the retrieved block height by checking `http://<server_ip>:8000/metrics` on the public browser of your local machine. Alternatively, you can run `curl http://localhost:8000/metrics` on your cosmos node host machine terminal.
 
-A brief description of the role goes here.
+> **_Note_**
+> - Remember you can use any cloud of choice and make the Infrastructure as Code changes to accomodate your cloud and server specifications.
 
-Requirements
-------------
+## Author
+- Samuel Arogbonlo - [GitHub](https://github.com/samuelarogbonlo)
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
-
-Role Variables
---------------
-
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
-
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
-
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+## License
+The MIT License (http://www.opensource.org/licenses/mit-license.php)

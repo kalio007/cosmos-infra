@@ -2,12 +2,10 @@
   template:
     src: gaiad.service.j2
     dest: /etc/systemd/system/gaiad.service
-
-- name: Reload systemd
-  systemd:
-    daemon_reload: yes
+  notify: Reload systemd
 
 - name: Enable and start gaiad service
   systemd:
     name: gaiad
     enabled: yes
+    state: started

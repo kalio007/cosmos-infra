@@ -1,2 +1,6 @@
 ---
 # handlers file for cosmoshub
+# Define handlers
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes

@@ -5,7 +5,9 @@
     owner: cosmosuser
     group: cosmosuser
     mode: '0700'
-
+  become: yes
+  become_user: cosmosuser
+  
 - name: Ensure Gaia directory exists
   file:
     path: /home/cosmosuser/.gaia
@@ -36,10 +38,11 @@
     msg: 'The sudoers file is invalid'
   when: result.rc != 0
 
-- name: Update and upgrade APT packages
+- name: Update and upgrade apt packages
+  become: true
   apt:
     update_cache: yes
-    upgrade: dist
+    upgrade: 'yes'
 
 - name: Install required packages
   apt:
@@ -54,9 +57,6 @@
       - python3-pip
       - python3-venv
     state: present
-
-- name: Remove old Go installation
-  command: sudo rm -rf /usr/local/go
 
 - name: Download and install Go
   shell: curl -Ls https://go.dev/dl/go1.21.10.linux-amd64.tar.gz | sudo tar -xzf - -C /usr/local

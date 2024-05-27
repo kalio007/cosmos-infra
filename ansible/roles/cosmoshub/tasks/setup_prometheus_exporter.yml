@@ -7,11 +7,15 @@
 
 - name: Create a virtual environment for the Prometheus exporter
   command: python3 -m venv /home/cosmosuser/prometheus_venv
+  args:
+    creates: /home/cosmosuser/prometheus_venv
   become: yes
   become_user: cosmosuser
 
 - name: Ensure required Python packages are installed in the virtual environment
-  command: /home/cosmosuser/prometheus_venv/bin/pip install flask requests
+  pip:
+    virtualenv: /home/cosmosuser/prometheus_venv
+    name: ['flask', 'requests']
   become: yes
   become_user: cosmosuser
 

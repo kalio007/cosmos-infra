@@ -6,22 +6,33 @@
   become: yes
   become_user: cosmosuser
 
+- name: Check if Gaia binary exists
+  stat:
+    path: /home/cosmosuser/go/bin/gaiad
+  register: gaia_binary
+
 - name: Build Gaia binaries
-  shell: make install
+  command: make install
   args:
     chdir: /home/cosmosuser/gaia
+    creates: /home/cosmosuser/go/bin/gaiad
   environment:
     GOROOT: /usr/local/go
     GOPATH: /home/cosmosuser/go
     PATH: "/usr/local/go/bin:/home/cosmosuser/go/bin:{{ ansible_env.PATH }}"
   become: yes
   become_user: cosmosuser
+  when: not gaia_binary.stat.exists
 
-- name: Copy gaiad binary to /usr/local/bin
-  command: cp /home/cosmosuser/go/bin/gaiad /usr/local/bin/
+- name: Copy gaiad binary to /usr/local/bin if it does not exist
+  copy:
+    src: /home/cosmosuser/go/bin/gaiad
+    dest: /usr/local/bin/gaiad
+    remote_src: yes
   become: yes
+  when: not gaia_binary.stat.exists
 
-- name: Create Cosmovisor directories
+- name: Ensure Cosmovisor directories exist
   file:
     path: "{{ item }}"
     state: directory
@@ -32,7 +43,6 @@
     - /home/cosmosuser/.gaia/cosmovisor/genesis/bin
     - /home/cosmosuser/.gaia/cosmovisor/upgrades/v16.0.0/bin
   become: yes
-
 
 - name: Copy Gaia binary to Cosmovisor genesis bin
   copy:
