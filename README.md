@@ -7,11 +7,11 @@ This project involves bootstraping and exposing a new Cosmos node using Ansible 
 
 Also, the setup has a feature to retrieve the latest block height synced by the node and reportted using a prometheus endpoint. It also achieves the following majorly:
 
-**- Idempotency:** This means that after the initial setup, no re-running will interfere with node operations.
+- **Idempotency:** This means that after the initial setup, no re-running will interfere with node operations.
 
-**- Configurability:** Many variables are configurable like the token, ssh-key fingerprint, persistent peers, seeds and much more.
+- **Configurability:** Many variables are configurable like the token, ssh-key fingerprint, persistent peers, seeds and much more.
 
-**- Resiliency:** The cosmos node and the prometheus exporter runs as a systemd service and will restart after crashing.
+- **Resiliency:** The cosmos node and the prometheus exporter runs as a systemd service and will restart after crashing.
 
 ### Prerequisites
 - Ansible
