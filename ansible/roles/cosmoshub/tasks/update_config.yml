@@ -1,12 +1,15 @@
 - name: Get public IP of the server
-  shell: curl -s http://checkip.amazonaws.com
+  ansible.builtin.uri:
+    url: http://checkip.amazonaws.com
+    return_content: yes
   register: public_ip
 
 - name: Update external_address in config.toml
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /home/cosmosuser/.gaia/config/config.toml
     regexp: '^external_address = ".*"'
-    line: 'external_address = "tcp://{{ public_ip.stdout }}:26656"'
+    line: 'external_address = "tcp://{{ public_ip.content.strip() }}:26656"'
+  become: yes
 
 # - name: Add persistent_peers to config.toml
 #   lineinfile:
