@@ -1,5 +1,5 @@
 - name: Check if Cosmovisor is installed
-  shell: /usr/local/go/bin/go list -m -versions github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
+  command: /usr/local/go/bin/go list -m -versions github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor
   register: cosmovisor_check
   ignore_errors: yes
   changed_when: false
@@ -9,8 +9,7 @@
     PATH: "/usr/local/go/bin:/home/cosmosuser/go/bin:{{ ansible_env.PATH }}"
 
 - name: Install Cosmovisor if not installed or outdated
-  shell: |
-    /usr/local/go/bin/go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
+  ansible.builtin.command: /usr/local/go/bin/go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
   environment:
     GOROOT: /usr/local/go
     GOPATH: /home/cosmosuser/go
