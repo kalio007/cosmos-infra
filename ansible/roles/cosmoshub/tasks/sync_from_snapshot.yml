@@ -4,10 +4,10 @@
     state: stopped
 
 - name: Backup priv_validator_state.json
-  shell: cp /home/cosmosuser/.gaia/data/priv_validator_state.json /home/cosmosuser/.gaia/priv_validator_state.json.backup
-  args:
-    creates: /home/cosmosuser/.gaia/priv_validator_state.json.backup
-  become: yes
+  ansible.builtin.copy:
+    src: /home/cosmosuser/.gaia/data/priv_validator_state.json
+    dest: /home/cosmosuser/.gaia/priv_validator_state.json.backup
+    remote_src: yes
 
 - name: Remove existing data directory
   file:
@@ -32,12 +32,23 @@
     path: /home/cosmosuser/cosmoshub_<snapshot ID>.tar.lz4
   register: snapshot_file
 
-- name: Download and extract snapshot if not already present
-  shell: aria2c -x 16 -s 16 -k 1M -o cosmoshub_<snapshot ID>.tar.lz4 https://snapshots.lavenderfive.com/snapshots/cosmoshub/cosmoshub_<snapshot ID>.tar.lz4 && tar -I lz4 -xf cosmoshub_<snapshot ID>.tar.lz4 -C /home/cosmosuser/.gaia
-  args:
-    chdir: /home/cosmosuser
-  become: yes
+- name: Download snapshot if not already present
+  ansible.builtin.get_url:
+    url: https://snapshots.lavenderfive.com/snapshots/cosmoshub/cosmoshub_<snapshot ID>.tar.lz4
+    dest: /home/cosmosuser/cosmoshub_<snapshot ID>.tar.lz4
+    mode: '0644'
   when: not snapshot_file.stat.exists
+  become: yes
+
+- name: Extract snapshot if not already present
+  ansible.builtin.unarchive:
+    src: /home/cosmosuser/cosmoshub_<snapshot ID>.tar.lz4
+    dest: /home/cosmosuser/.gaia
+    remote_src: yes
+    extra_opts:
+      - --use-compress-program=lz4
+  when: not snapshot_file.stat.exists
+  become: yes
 
 - name: Check if priv_validator_state.json.backup exists
   stat:
