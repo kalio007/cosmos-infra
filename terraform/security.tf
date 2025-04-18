@@ -1,3 +1,4 @@
+//terraform/security.tf
 resource "aws_security_group" "cosmos_sg" {
   name        = "cosmos-sg"
   description = "Security group for Cosmos node"
