@@ -1,10 +1,8 @@
-variable "digitalocean_token" {
-  description = "DigitalOcean API token"
+variable "key_path" {
+  description = "Path to the private key file"
   type        = string
 }
-
-variable "ssh_keys" {
-  description = "List of SSH key fingerprints to be added to the Droplet"
-  type        = list(string)
-  default     = []
+variable "aws_region" {
+  description = "AWS region to deploy resources"
+  default     = "us-east-1"
 }
